@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "engigraph"
+version = "0.1.0"
+description = "RAG-powered engineering blog knowledge base"
+authors = ["EngiGraph"]
+readme = "README.md"
+packages = [{include = "app"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.111"
+uvicorn = {extras = ["standard"], version = "^0.29"}
+sqlalchemy = "^2.0"
+alembic = "^1.13"
+pydantic = "^2.7"
+pydantic-settings = "^2.2"
+httpx = "^0.27"
+feedparser = "^6.0"
+trafilatura = "^1.9"
+beautifulsoup4 = "^4.12"
+lxml = "^5.2"
+tiktoken = "^0.7"
+openai = "^1.30"
+litellm = "^1.40"
+qdrant-client = "^1.9"
+chromadb = "^0.5"
+aiosqlite = "^0.20"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
