@@ -4,10 +4,8 @@ from fastapi import FastAPI
 
 from app.api import article_routes, category_routes, ingestion_routes, rag_routes, search_routes, source_routes
 from app.core.config import get_settings
-from app.core.database import Base, SessionLocal, engine
+from app.core.database_initializer import initialize_database_if_needed
 from app.core.logging import configure_logging
-from app.services.factory import rebuild_in_memory_vector_store
-from data.seeds import seed_categories_and_sources
 
 
 def create_app() -> FastAPI:
@@ -23,13 +21,7 @@ def create_app() -> FastAPI:
     @app.on_event("startup")
     async def startup() -> None:
         settings = get_settings()
-        Base.metadata.create_all(bind=engine)
-        db = SessionLocal()
-        try:
-            seed_categories_and_sources(db)
-            rebuild_in_memory_vector_store(db)
-        finally:
-            db.close()
+        initialize_database_if_needed()
         app.state.http_client = httpx.AsyncClient(
             timeout=30.0,
             verify=certifi.where() if settings.http_verify_ssl else False,
