@@ -1,7 +1,7 @@
 import asyncio
 
 
-class AsyncIngestionOrchestrator:
+class CrawlRunArticleProcessor:
     def __init__(
         self,
         indexing_pipeline,
