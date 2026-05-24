@@ -31,9 +31,7 @@ def crawl_source(
         source, run = service.create_crawl_run(source_id)
     except ValueError:
         raise HTTPException(status_code=404, detail="Source not found")
-    background_tasks.add_task(
-        run_crawl_background, run.id, source.id, request.app
-    )
+    background_tasks.add_task(run_crawl_background, run.id, source.id, request.app)
     return CrawlSourceResponse(
         crawl_run_id=run.id,
         source_id=source_id,
@@ -56,13 +54,13 @@ def reindex_article(article_id: int):
 
 
 @router.get("/crawl-runs", response_model=list[CrawlRunResponse])
-def list_crawl_runs(db: Session = Depends(get_db)):
-    return CrawlRunRepository(db).list_all()
+def list_crawl_runs(services: Services = Depends(get_services)):
+    return services.ingestion.crawl_run_repository.list_all()
 
 
 @router.get("/crawl-runs/{crawl_run_id}", response_model=CrawlRunResponse)
-def get_crawl_run(crawl_run_id: int, db: Session = Depends(get_db)):
-    run = CrawlRunRepository(db).get_by_id(crawl_run_id)
+def get_crawl_run(crawl_run_id: int, services: Services = Depends(get_services)):
+    run = services.ingestion.crawl_run_repository.get_by_id(crawl_run_id)
     if run is None:
         raise HTTPException(status_code=404, detail="Crawl run not found")
     return run
