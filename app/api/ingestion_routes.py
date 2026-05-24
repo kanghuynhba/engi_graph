@@ -1,8 +1,8 @@
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
+from app.api.dependencies import Services, get_services
 from app.core.database import get_db
-from app.repositories.crawl_run_repository import CrawlRunRepository
 from app.schemas.ingestion_schema import (
     CrawlRunResponse,
     CrawlSourceResponse,
