@@ -1,24 +1,16 @@
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
 
-from app.core.database import get_db
-from app.repositories.article_repository import ArticleRepository
+from app.api.dependencies import Services, get_services
 from app.schemas.article_schema import ArticleDetailResponse, ArticleResponse
 from app.schemas.search_schema import SearchArticleResponse, SearchArticlesRequest, SearchChunkResponse, SearchChunksRequest
-from app.services.factory import build_rag_parts
-from app.services.search_service import SearchService
 
 router = APIRouter(prefix="/api/search", tags=["search"])
 
 
-def get_service(db: Session = Depends(get_db)) -> SearchService:
-    return SearchService(build_rag_parts(db), ArticleRepository(db))
-
-
 @router.post("/chunks", response_model=list[SearchChunkResponse])
-def search_chunks(payload: SearchChunksRequest, service: SearchService = Depends(get_service)):
+def search_chunks(payload: SearchChunksRequest, services: Services = Depends(get_services)):
     filters = payload.model_dump(exclude={"query", "top_k"})
-    chunks = service.search_chunks(payload.query, filters, payload.top_k)
+    chunks = services.search.search_chunks(payload.query, filters, payload.top_k)
     return [
         SearchChunkResponse(
             chunk_id=chunk.chunk_id,
@@ -36,14 +28,17 @@ def search_chunks(payload: SearchChunksRequest, service: SearchService = Depends
 
 
 @router.post("/articles", response_model=list[SearchArticleResponse])
-def search_articles(payload: SearchArticlesRequest, service: SearchService = Depends(get_service)):
+def search_articles(payload: SearchArticlesRequest, services: Services = Depends(get_services)):
     filters = payload.model_dump(exclude={"query", "top_k"})
-    return [SearchArticleResponse(**article.__dict__) for article in service.search_articles(payload.query, filters, payload.top_k)]
+    return [
+        SearchArticleResponse(**article.__dict__)
+        for article in services.search.search_articles(payload.query, filters, payload.top_k)
+    ]
 
 
 @router.post("/full-article", response_model=ArticleDetailResponse | None)
-def full_article(payload: SearchArticlesRequest, service: SearchService = Depends(get_service)):
-    article = service.get_best_full_article(payload.query, payload.model_dump(exclude={"query", "top_k"}))
+def full_article(payload: SearchArticlesRequest, services: Services = Depends(get_services)):
+    article = services.search.get_best_full_article(payload.query, payload.model_dump(exclude={"query", "top_k"}))
     if article is None:
         return None
     base = ArticleResponse.from_article(article).model_dump()
