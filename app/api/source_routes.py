@@ -32,7 +32,9 @@ def create_source(payload: SourceCreate, service: SourceService = Depends(get_se
 
 
 @router.put("/{source_id}", response_model=SourceResponse)
-def update_source(source_id: int, payload: SourceCreate, service: SourceService = Depends(get_service)):
+def update_source(
+    source_id: int, payload: SourceCreate, service: SourceService = Depends(get_service)
+):
     return service.update_source(source_id, payload.model_dump())
 
 

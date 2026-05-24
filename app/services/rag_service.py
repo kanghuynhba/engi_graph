@@ -30,6 +30,11 @@ class RAGService:
             }
         )
         chunks = self.parts["retriever"].retrieve(plan.generated_queries, effective_filters, top_k)
+        if not chunks and (effective_filters.get("category_ids") or effective_filters.get("category_names")):
+            relaxed_filters = effective_filters.copy()
+            relaxed_filters["category_ids"] = None
+            relaxed_filters["category_names"] = None
+            chunks = self.parts["retriever"].retrieve(plan.generated_queries, relaxed_filters, top_k)
         chunks = self.parts["reranker"].rerank(question, chunks)
         self.parts["rag_result_repo"].bulk_create(
             [
